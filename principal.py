@@ -1,22 +1,36 @@
 import time
 start = time.time()
 
-textos_p = 'pickles/textos.p'
+textos_p       = 'pickles/textos.p'
+target_p       = 'pickles/target.p'
+target_names_p = 'pickles/target_names.p'
 INPUT = '../../../dataset/noticias2013_reducido'
 import numpy as np
 import pickle
+import re
 def get_feature(feature):
 	return [linea[len(feature):] for linea in lineas if linea.startswith(feature)]
 
 
 try:
+	target = pickle.load(open(target_p,'rb'))
+	target_names = pickle.load(open(target_names_p, 'rb'))
+except:
+	lineas   = open(INPUT, 'r', encoding='utf-8').read().splitlines()
+	sections = get_feature('sectionName: ')
+	target = [1 if section=='Business' else 0 for section in sections]
+	target_names = ['no_relevant','relevant']
+	pickle.dump(target,open(target_p,'wb'))
+	pickle.dump(target_names,open(target_names_p,'wb'))
+try:
 	textos = pickle.load(open(textos_p,'rb'))
 except:
-	lineas = open(INPUT, 'r', encoding='utf-8').read().splitlines()
-	titulos = get_feature('webTitle: ')
-	textos  = get_feature('bodytext: ')
-	id      = get_feature('instanceNro: ')
-	date    = get_feature('webPublicationDate: ')
+	lineas   = open(INPUT, 'r', encoding='utf-8').read().splitlines()
+
+	titulos  = get_feature('webTitle: ')
+	textos   = get_feature('bodytext: ')
+	id       = get_feature('instanceNro: ')
+	date     = get_feature('webPublicationDate: ')
 
 	noticias = list(zip(id,date,titulos,textos))
 	print('cantidad de noticias: {}'.format(len(noticias)))
@@ -32,6 +46,8 @@ except:
 	print(str(stopword_list))
 	print('longitud: {}'.format(len(stopword_list)))
 	def my_word_tokenize(text):
+		texto = re.sub('&apos;',"'",texto)
+		texto = re.sub('&quot;','"',texto)
 		text = BeautifulSoup(text,'html.parser').get_text()
 		lista_palabras = word_tokenize(text)
 		lista_palabras = [palabra.lower() for palabra in lista_palabras]

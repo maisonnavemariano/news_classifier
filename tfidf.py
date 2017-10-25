@@ -2,10 +2,12 @@ import numpy as np
 import math
 import pickle
 
-index_terminos_p = 'pickles/index_terminos.p'
 inverse_index_p  = 'pickles/inverse_index.p'
 idf_p            = 'pickles/idf.p'
 textos_dict_p    = 'pickles/textos_dict.p'
+
+feature_names_p  = 'pickles/feature_names.p'
+data_p           = 'pickles/data.p'
 
 class corpus(object):
 	def __init__(self, lista_textos_filtrados_con_id):
@@ -23,7 +25,7 @@ class corpus(object):
 		# Indice Palabras
 		print('[OK] generamos indice de terminos.')
 		try:
-			self.index_terminos = pickle.load(open(index_terminos_p, 'rb'))
+			self.index_terminos = pickle.load(open(feature_names_p, 'rb'))
 		except:
 			print('[WARNING] pickle de indices no encontrado.')
 			cjto_palabras = set()
@@ -39,7 +41,7 @@ class corpus(object):
 				if aparicion/len(textos_con_id)>0.8:
 					writer.write('{}: {}'.format(termino,aparicion/len(textos_con_id)))
 			writer.close()
-			pickle.dump(self.index_terminos,open(index_terminos_p,'wb'))
+			pickle.dump(self.index_terminos,open(feature_names_p,'wb'))
 		# Indice inverso
 		print('[OK] generamos indice inverso de terminos.')
 		try:
@@ -59,11 +61,21 @@ class corpus(object):
 				idf.append(len([texto for texto in textos_con_id if term in texto[1]]))
 			self.idf = np.array([math.log10(len(self.textos_dict)/valor) for valor in idf])
 			pickle.dump(self.idf,open(idf_p,'wb'))
+		print('[OK] generamos matriz de datos.')
+		try:
+			data = pickle.load(open('data_p','rb'))
+		except:
+			print('[WARNING] pickle de matriz de datos no encontrado.')
+			data = zeros(shape=(len(textos_con_id), len(self.index_terminos)) )
+			index = 0
+			for (id,texto) in textos_con_id:
+				data[index] = np.array(get_vect(texto))
+				index += 1
 
 	def __normalize(self,vec1):
 		vec1_pow2 = [elem*elem for elem in vec1]
 		module = math.sqrt(sum(vec1_pow2))
-		return [elem/module for elem in vec1] 
+		return [elem/module for elem in vec1]
 
 	def similitud_docs(self,text_1,text_2):
 		tf_1 = np.array([text_1.count(term) for term in self.index_terminos])
@@ -77,3 +89,11 @@ class corpus(object):
 		tf_idf_1 = self.__normalize(np.array([tf*self.idf[indice] for (indice,tf) in enumerate(tf_1)]))
 		tf_idf_2 = self.__normalize(np.array([tf*self.idf[indice] for (indice,tf) in enumerate(tf_2)]))
 		return np.dot(tf_idf_1,tf_idf_2)
+	def get_vect(self,text_1):
+		tf_1 = np.array([text_1.count(term) for term in self.index_terminos])
+		tf_idf_1 = self.__normalize(np.array([tf*self.idf[indice] for (indice,tf) in enumerate(tf_1)]))
+		return tf_idf_1
+	def get_vect_index(self,index_1):
+		tf_1 = np.array([self.textos_dict[index1][1].count(term) for term in self.index_terminos])
+		tf_idf_1 = self.__normalize(np.array([tf*self.idf[indice] for (indice,tf) in enumerate(tf_1)]))
+		return tf_idf_1
