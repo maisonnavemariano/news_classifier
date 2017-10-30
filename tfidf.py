@@ -66,7 +66,7 @@ class corpus(object):
 			data = pickle.load(open('data_p','rb'))
 		except:
 			print('[WARNING] pickle de matriz de datos no encontrado.')
-			data = zeros(shape=(len(textos_con_id), len(self.index_terminos)) )
+			data = np.zeros(shape=(len(textos_con_id), len(self.index_terminos)) )
 			index = 0
 			for (id,texto) in textos_con_id:
 				data[index] = np.array(get_vect(texto))
