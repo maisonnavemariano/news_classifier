@@ -9,6 +9,7 @@ textos_dict_p    = 'pickles/textos_dict.p'
 feature_names_p  = 'pickles/feature_names.p'
 data_p           = 'pickles/data.p'
 
+
 class corpus(object):
 	def __init__(self, lista_textos_filtrados_con_id):
 		from collections import defaultdict
@@ -68,6 +69,11 @@ class corpus(object):
 			print('[WARNING] pickle de matriz de datos no encontrado.')
 			data = np.zeros(shape=(len(textos_con_id), len(self.index_terminos)) )
 			index = 0
+			def get_vect(self,text_1):
+				tf_1 = np.array([text_1.count(term) for term in self.index_terminos])
+				tf_idf_1 = self.__normalize(np.array([tf*self.idf[indice] for (indice,tf) in enumerate(tf_1)]))
+				return tf_idf_1
+
 			for (id,texto) in textos_con_id:
 				data[index] = np.array(get_vect(texto))
 				index += 1
@@ -89,10 +95,7 @@ class corpus(object):
 		tf_idf_1 = self.__normalize(np.array([tf*self.idf[indice] for (indice,tf) in enumerate(tf_1)]))
 		tf_idf_2 = self.__normalize(np.array([tf*self.idf[indice] for (indice,tf) in enumerate(tf_2)]))
 		return np.dot(tf_idf_1,tf_idf_2)
-	def get_vect(self,text_1):
-		tf_1 = np.array([text_1.count(term) for term in self.index_terminos])
-		tf_idf_1 = self.__normalize(np.array([tf*self.idf[indice] for (indice,tf) in enumerate(tf_1)]))
-		return tf_idf_1
+
 	def get_vect_index(self,index_1):
 		tf_1 = np.array([self.textos_dict[index1][1].count(term) for term in self.index_terminos])
 		tf_idf_1 = self.__normalize(np.array([tf*self.idf[indice] for (indice,tf) in enumerate(tf_1)]))
